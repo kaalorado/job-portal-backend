@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/jobs/{id}/applications', [ApplicationController::class, 'jobApplications']);
         Route::patch('/applications/{id}/status', [ApplicationController::class, 'updateStatus']);
+        Route::get('/applications/{id}/resume',[ApplicationController::class, 'downloadResume']);
 
     });
 

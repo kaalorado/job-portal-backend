@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Job;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ApplicationController extends Controller
 {
@@ -112,5 +113,38 @@ class ApplicationController extends Controller
             ->paginate(10);
 
     return response()->json($applications);
-}
+    }
+
+        //download resumee
+    public function downloadResume(Request $request, $id) {
+        $application = Application::findOrFail($id);
+
+        // Verify employer owns the job
+        if (
+            $application->job->employer_profile_id !==
+            $request->user()->employerProfile->id
+        ) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+        //resume path
+        $resumePath = $application->applicantProfile->resume_path;
+
+        if (!$resumePath) {
+            return response()->json([
+                'message' => 'Resume not found'
+            ], 404);
+        }
+        //check if file exist
+        if (!Storage::disk('public')->exists($resumePath)) {
+            return response()->json([
+                'message' => 'File does not exist'
+            ], 404);
+        }
+        //download file
+        return response()->download(
+            storage_path('app/public/' . $resumePath)
+        );
+    }
 }
